@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GxEPD2_4C.h"
 #include "esphome/core/component.h"
 #include "esphome/components/spi/spi.h"
 #include "esphome/components/display/display_buffer.h"
@@ -535,18 +536,10 @@ class GDEY029F51H : public WaveshareEPaper {
   void set_full_update_every(uint32_t full_update_every);
 
  protected:
-  uint32_t full_update_every_{30};
-  uint32_t at_update_{0};
-
+  uint32_t full_update_every_{60};
   int get_width_internal() override;
   int get_height_internal() override;
   uint32_t idle_timeout_() override;
-
- private:
-  void reset_();
-  void update_full_();
-  void update_part_();
-  void init_display_();
 };
 
 class WaveshareEPaper4P2In : public WaveshareEPaper {

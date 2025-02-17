@@ -2516,107 +2516,27 @@ static const uint8_t LUT_WHITE_TO_BLACK_4_2[] = {
 //========================================================
 
 void GDEY029F51H::initialize() {
-  this->init_display_();
   ESP_LOGD(TAG, "Initialization complete, set the display to deep sleep");
-  this->deep_sleep();
 }
 
-GDEY029F51H::GDEY029F51H() { this->reset_duration_ = 10; }
-
-void GDEY029F51H::reset_() {
-  if (this->reset_pin_ != nullptr) {
-    this->reset_pin_->digital_write(false);
-    delay(reset_duration_);  // NOLINT
-    this->reset_pin_->digital_write(true);
-    delay(reset_duration_);  // NOLINT
-  }
-}
-
-void GDEY029F51H::init_display_() {
-  this->reset_();
-
-  this->wait_until_idle_();
-  this->command(0x12);  // SWRESET
-  this->wait_until_idle_();
-
-  this->command(0x01);  //  driver output control
-  this->data(0x2B);     // (height - 1) % 256
-  this->data(0x01);     // (height - 1) / 256
-  this->data(0x00);
-
-  this->command(0x3C);  // BorderWaveform
-  this->data(0x01);
-  this->command(0x18);  // Read built-in temperature sensor
-  this->data(0x80);
-
-  // GD sample code (Display_EPD_W21.cpp@90ff)
-  this->command(0x11);  // data entry mode
-  this->data(0x03);
-  // set windows (0,0,400,300)
-  this->command(0x44);  // set Ram-X address start/end position
-  this->data(0);
-  this->data(0x31);  // (width / 8 -1)
-
-  this->command(0x45);  //  set Ram-y address start/end position
-  this->data(0);
-  this->data(0);
-  this->data(0x2B);  // (height - 1) % 256
-  this->data(0x01);  // (height - 1) / 256
-
-  // set cursor (0,0)
-  this->command(0x4E);  // set RAM x address count to 0;
-  this->data(0);
-  this->command(0x4F);  // set RAM y address count to 0;
-  this->data(0);
-  this->data(0);
-
-  this->wait_until_idle_();
-}
-
-void GDEY029F51H::update_full_() {
-  this->command(0x21);  // display update control
-  this->data(0x40);     // bypass RED as 0
-  this->data(0x00);     // single chip application
-  this->command(0x1A);  // Write to temperature register
-  this->data(0x6E);
-  this->command(0x22);
-  this->data(0xd7);
-  this->command(0x20);
-  this->wait_until_idle_();
-}
+GDEY029F51H::GDEY029F51H() {}
 
 void HOT GDEY029F51H::display() {
   ESP_LOGD(TAG, "Wake up the display");
-  this->init_display_();
-
-  if (!this->wait_until_idle_()) {
-    this->status_set_warning();
-    ESP_LOGE(TAG, "Failed to perform update, display is busy");
-    return;
-  }
-
-  if (this->full_update_every_ == 1) {
-    ESP_LOGD(TAG, "Full update");
-    // do single full update
-    this->command(0x24);
-    this->start_data_();
-    this->write_array(this->buffer_, this->get_buffer_length_());
-    this->end_data_();
-
-    // TurnOnDisplay
-    this->update_full_();
-    return;
-  }
-
-  this->at_update_ = (this->at_update_ + 1) % this->full_update_every_;
-  this->wait_until_idle_();
+  ESP_LOGD(TAG, "Full update");
   ESP_LOGD(TAG, "Set the display back to deep sleep");
-  this->deep_sleep();
 }
-void GDEY029F51H::set_full_update_every(uint32_t full_update_every) { this->full_update_every_ = full_update_every; }
+
+void GDEY029F51H::set_full_update_every(uint32_t full_update_every) {
+    this->full_update_every_ = full_update_every;
+}
+
 int GDEY029F51H::get_width_internal() { return 400; }
+
 int GDEY029F51H::get_height_internal() { return 300; }
+
 uint32_t GDEY029F51H::idle_timeout_() { return 5000; }
+
 void GDEY029F51H::dump_config() {
   LOG_DISPLAY("", "GoodDisplay E-Paper", this);
   ESP_LOGCONFIG(TAG, "  Model: custom");
