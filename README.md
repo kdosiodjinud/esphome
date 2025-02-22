@@ -1,4 +1,4 @@
-#Good Display GDEY029T94 2.9" 296x128 ePaper
+# Good Display GDEY029T94 2.9" 296x128 ePaper
 ## Example
 In this code is prepared deep_sleep mode. If you copy / paste code, display will be updated only when displej boot up (ideal for development)
 
