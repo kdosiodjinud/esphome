@@ -1798,7 +1798,6 @@ void WaveshareEPaper2P9InV2R2::set_full_update_every(uint32_t full_update_every)
 //  -
 //  https://github.com/Allen-Kuang/e-ink_Demo/blob/main/2.9%20inch%20E-paper%20-%20monocolor%20128x296/example/Display_EPD_W21.cpp
 // ========================================================
-
 void GDEY029T94::initialize() {
   // EPD hardware init start
   this->reset_();
@@ -1845,9 +1844,17 @@ void GDEY029T94::initialize() {
 void HOT GDEY029T94::display() {
   this->command(0x24);  // write RAM for black(0)/white (1)
   this->start_data_();
-  for (uint32_t i = 0; i < this->get_buffer_length_(); i++) {
-    this->write_byte(this->buffer_[i]);
+
+  int width_bytes = this->get_width_internal() / 8; // bytes per row
+  int height = this->get_height_internal(); // count of rows
+
+  for (int y = 0; y < height; y++) {  // original towards row
+    int flipped_y = height - 1 - y;  // rewerse row
+    for (int x = 0; x < width_bytes; x++) {
+      this->write_byte(this->buffer_[flipped_y * width_bytes + x]);
+    }
   }
+
   this->end_data_();
   this->command(0x22);  // Display Update Control
   this->data(0xF7);
